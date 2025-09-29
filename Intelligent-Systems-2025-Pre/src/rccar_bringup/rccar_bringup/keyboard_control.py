@@ -125,10 +125,10 @@ class KeyboardControl(Node):
                     steer = 0.0
                     speed = 0.0
                 elif key == 'a':
-                    steer = +self.max_steer
+                    steer = -self.max_steer
                     speed = self.max_speed
                 elif key == 'd':
-                    steer = -self.max_steer
+                    steer = +self.max_steer
                     speed = self.max_speed
 
                 if steer is not None:
