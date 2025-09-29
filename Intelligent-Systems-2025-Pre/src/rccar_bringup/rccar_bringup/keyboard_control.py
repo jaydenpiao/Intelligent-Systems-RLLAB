@@ -115,17 +115,27 @@ class KeyboardControl(Node):
                 # 'w': move forward, 's': stop, 'a': turn left, 'd': turn right
                 # 'steer' must be in [-self.max_steer, self.max_steer]
                 # 'speed' must be in [0, self.max_speed]
+                steer = None
+                speed = None 
+
+                if key == 'w':
+                    steer = 0.0
+                    speed = self.max_speed
+                elif key == 's':
+                    steer = 0.0
+                    speed = 0.0
+                elif key == 'a':
+                    steer = +self.max_steer
+                    speed = self.max_speed
+                elif key == 'd':
+                    steer = -self.max_steer
+                    speed = self.max_speed
+
+                if steer is not None:
+                    steer = max(-self.max_steer, min(self.max_steer, float(steer)))
+                if speed is not None:
+                    speed = max(0.0, min(self.max_speed, float(speed)))
                 
-                
-                
-
-
-
-
-
-
-
-
                 if key == 'q':
                     print("Keyborad Control Finished")
                     rclpy.shutdown()
@@ -137,9 +147,11 @@ class KeyboardControl(Node):
 
                 #################################################################
                 ### TODO 5. Publish '/action' topic containing steer & speed. ###
-                
-
-
+                if steer is not None and speed is not None:
+                    action = AckermannDriveStamped()
+                    action.drive.steering_angle = steer
+                    action.drive.speed = speed
+                    self.action_publisher.publish(action)
 
                 #################################################################
                 

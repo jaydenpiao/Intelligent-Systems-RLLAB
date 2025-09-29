@@ -65,6 +65,7 @@ class RCCarBridge(Node):
         # Terminate signal
         ####################################################
         ### TODO 1. Create '/terminate' topic publisher. ###
+        self.terminate_publisher = self.create_publisher(Bool, "/terminate", 10)
         
         ####################################################
         
@@ -72,6 +73,7 @@ class RCCarBridge(Node):
         self.reset_subscriber = self.create_subscription(String, "/reset", self.reset_callback, 1)
         ##################################################
         ### TODO 2. Create '/action' topic subscriber. ###
+        self.action_subscriber = self.create_subscription(AckermannDriveStamped, "/action", self.action_callback, 10)
         
         ##################################################
         self.get_logger().info(">>> RCCar Bridge Node Activated!")
@@ -116,8 +118,9 @@ class RCCarBridge(Node):
                 ####################################################################
                 ### TODO 3. Publish '/terminate' topic to keyboard_control node. ###
                 # ">>> Terminated" should be printed in terminal in which keyboard_control node is running.
-                
-
+                term_msg = Bool()
+                term_msg.data = True
+                self.terminate_publisher.publish(term_msg)
 
                 ###################################################################
                 self.env.close()
