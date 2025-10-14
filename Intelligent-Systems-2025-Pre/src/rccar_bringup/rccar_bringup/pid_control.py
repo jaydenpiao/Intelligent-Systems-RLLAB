@@ -83,9 +83,9 @@ class PurePursuit(Node):
             Recommend tuning PID coefficient P->D->I order.
             Also, Recommend set Ki extremely low.
         """
-        self.Kp = 1.1
+        self.Kp = 1.3
         self.Ki = 0.0
-        self.Kd = 0.06
+        self.Kd = 0.08
         ###################################################
         ###################################################
         self.get_logger().info(">>> Running PreProject 3")
@@ -185,7 +185,7 @@ class PurePursuit(Node):
 
                 # 4) Speed scaled by steering (slow down on sharp turns)
                 steer_ratio = abs(steer) / self.max_steer # 0..1
-                speed = float(max(self.min_speed, self.max_speed * (1.0 - 0.6 * steer_ratio)))
+                speed = float(max(self.min_speed, self.max_speed * (1.0 - 0.40 * steer_ratio)))
 
                 # keep history for next step / saving
                 prev_err = err
@@ -231,7 +231,7 @@ class PurePursuit(Node):
                         your save file should be .pkl format
                         """
                         
-                        import pickle, time
+                        import pickle
                         traj = {'observations': obs_list, 'actions': act_list}
                         traj_path = os.path.join(self.traj_dir, f"{map}_trial{trial}_{int(time.time())}.pkl")
                         with open(traj_path, 'wb') as f:
