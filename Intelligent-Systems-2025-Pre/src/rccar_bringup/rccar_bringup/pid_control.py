@@ -83,9 +83,9 @@ class PurePursuit(Node):
             Recommend tuning PID coefficient P->D->I order.
             Also, Recommend set Ki extremely low.
         """
-        self.Kp = 0.0
+        self.Kp = 1.1
         self.Ki = 0.0
-        self.Kd = 0.0
+        self.Kd = 0.06
         ###################################################
         ###################################################
         self.get_logger().info(">>> Running PreProject 3")
@@ -160,9 +160,41 @@ class PurePursuit(Node):
                 3) Determine input steering of the rccar using PID controller
                 4) Calculate input velocity of the rccar appropriately in terms of input steering
                 """
+                # 1) Nearest waypoint
+                dpos = waypoints - pos # (N,2)
+                # argmin of squared distance (faster & stable)
+                nearest_idx = int(np.argmin(np.einsum('ij,ij->i', dpos, dpos)))
 
-                steer = 0
-                speed = 0
+                # 2) Lookahead target & heading error (wrap to [-pi, pi])
+                target_idx = (nearest_idx + self.lookahead) % N
+                target = waypoints[target_idx]
+                vec = target - pos
+                desired_yaw = np.arctan2(vec[1], vec[0])
+                # wrap angle using atan2(sin,cos)
+                err = float(np.arctan2(np.sin(desired_yaw - yaw), np.cos(desired_yaw - yaw)))
+
+                # 3) PID steering (discretization from 2.2)
+                if prev_err is None:
+                    d_err = 0.0
+                else:
+                    d_err = (err - prev_err) / self.dt
+                sum_err = float(np.clip(sum_err + err * self.dt, -2.0, 2.0)) # simple anti-windup
+
+                steer_unsat = self.Kp * err + self.Ki * sum_err + self.Kd * d_err
+                steer = float(np.clip(steer_unsat, -self.max_steer, self.max_steer))
+
+                # 4) Speed scaled by steering (slow down on sharp turns)
+                steer_ratio = abs(steer) / self.max_steer # 0..1
+                speed = float(max(self.min_speed, self.max_speed * (1.0 - 0.6 * steer_ratio)))
+
+                # keep history for next step / saving
+                prev_err = err
+                curr_err = err
+
+                # (Project1) log trajectory if requested
+                if self.save:
+                    obs_list.append({'scan': scan.copy()})
+                    act_list.append(np.array([steer, speed], dtype=float))
 
                 ###################################################
                 ###################################################
@@ -199,7 +231,11 @@ class PurePursuit(Node):
                         your save file should be .pkl format
                         """
                         
-                        traj_path = ""
+                        import pickle, time
+                        traj = {'observations': obs_list, 'actions': act_list}
+                        traj_path = os.path.join(self.traj_dir, f"{map}_trial{trial}_{int(time.time())}.pkl")
+                        with open(traj_path, 'wb') as f:
+                            pickle.dump(traj, f)
 
                         ###################################################
                         ###################################################
