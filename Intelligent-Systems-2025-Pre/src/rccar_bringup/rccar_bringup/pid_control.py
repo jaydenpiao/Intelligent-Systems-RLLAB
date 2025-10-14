@@ -83,9 +83,9 @@ class PurePursuit(Node):
             Recommend tuning PID coefficient P->D->I order.
             Also, Recommend set Ki extremely low.
         """
-        self.Kp = 0.6
-        self.Ki = 0.001
-        self.Kd = 0.1
+        self.Kp = 1.0
+        self.Ki = 0.0
+        self.Kd = 0.06
         ###################################################
         ###################################################
         self.get_logger().info(">>> Running PreProject 3")
