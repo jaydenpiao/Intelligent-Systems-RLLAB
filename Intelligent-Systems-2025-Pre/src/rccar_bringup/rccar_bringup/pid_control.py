@@ -85,7 +85,7 @@ class PurePursuit(Node):
         """
         self.Kp = 0.4
         self.Ki = 0.0
-        self.Kd = 0.04
+        self.Kd = 0.02
         ###################################################
         ###################################################
         self.get_logger().info(">>> Running PreProject 3")
